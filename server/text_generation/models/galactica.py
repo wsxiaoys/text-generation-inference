@@ -18,9 +18,9 @@ from transformers.models.opt.parallel_layers import (
     TensorParallelRowLinear,
 )
 
-from text_generation.models import CausalLM
 from text_generation.pb import generate_pb2
-from text_generation.models.causal_lm import CausalLMBatch
+from text_generation.models.causal_lm import CausalLM, CausalLMBatch
+from text_generation.models.opt import OPT, OPTSharded
 from text_generation.utils import (
     NextTokenChooser,
     StoppingCriteria,
@@ -132,7 +132,7 @@ class GalacticaCausalLMBatch(CausalLMBatch):
         )
 
 
-class Galactica(CausalLM):
+class Galactica(OPT):
     @property
     def batch_type(self) -> Type[CausalLMBatch]:
         return GalacticaCausalLMBatch
@@ -158,7 +158,7 @@ class Galactica(CausalLM):
         return outputs.logits, outputs.past_key_values
 
 
-class GalacticaSharded(Galactica):
+class GalacticaSharded(OPTSharded):
     def __init__(
         self, model_id: str, revision: Optional[str] = None, quantize: bool = False
     ):
@@ -230,18 +230,11 @@ class GalacticaSharded(Galactica):
                     slice_ = f.get_slice(name)
 
                     if isinstance(module, TensorParallelColumnLinear):
-                        if param_name == "weight":
-                            size = slice_.get_shape()[0]
-                            block_size = size // world_size
-                            start = rank * block_size
-                            stop = (rank + 1) * block_size
-                            tensor = slice_[start:stop]
-                        else:
-                            size = slice_.get_shape()[0]
-                            block_size = size // world_size
-                            start = rank * block_size
-                            stop = (rank + 1) * block_size
-                            tensor = slice_[start:stop]
+                        size = slice_.get_shape()[0]
+                        block_size = size // world_size
+                        start = rank * block_size
+                        stop = (rank + 1) * block_size
+                        tensor = slice_[start:stop]
                     elif isinstance(module, TensorParallelRowLinear):
                         if param_name == "weight":
                             size = slice_.get_shape()[1]
@@ -327,20 +320,3 @@ class GalacticaSharded(Galactica):
                     module._parameters[param_name] = tensor
                     if name == "model.decoder.embed_tokens.weight":
                         model.lm_head._parameters["weight"] = tensor
-
-    def forward(
-        self, input_ids, attention_mask, position_ids, past_key_values: Optional = None
-    ):
-        outputs = self.model.forward(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            past_key_values=past_key_values,
-            use_cache=True,
-        )
-
-        # Logits are sharded, so we need to gather them
-        logits = [torch.empty_like(outputs.logits) for _ in range(self.world_size)]
-        torch.distributed.all_gather(logits, outputs.logits, group=self.process_group)
-        logits = torch.cat(logits, dim=2)
-
-        return logits, outputs.past_key_values

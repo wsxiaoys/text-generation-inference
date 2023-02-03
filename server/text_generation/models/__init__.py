@@ -10,6 +10,7 @@ from text_generation.models.seq2seq_lm import Seq2SeqLM
 from text_generation.models.galactica import Galactica, GalacticaSharded
 from text_generation.models.santacoder import SantaCoder
 from text_generation.models.gpt_neox import GPTNeox, GPTNeoxSharded
+from text_generation.models.opt import OPT, OPTSharded
 from text_generation.models.t5 import T5Sharded
 
 __all__ = [
@@ -22,7 +23,13 @@ __all__ = [
     "GPTNeox",
     "GPTNeoxSharded",
     "Seq2SeqLM",
+    "Galactica",
+    "GalacticaSharded",
     "SantaCoder",
+    "GPTNeox",
+    "GPTNeoxSharded",
+    "OPT",
+    "OPTSharded",
     "T5Sharded",
     "get_model",
 ]
@@ -69,6 +76,12 @@ def get_model(
             return T5Sharded(model_id, revision, quantize=quantize)
         else:
             return Seq2SeqLM(model_id, revision, quantize=quantize)
+
+    if config.model_type == "opt":
+        if sharded:
+            return OPTSharded(model_id, revision, quantize=quantize)
+        else:
+            return OPT(model_id, revision, quantize=quantize)
 
     if sharded:
         raise ValueError("sharded is not supported for AutoModel")
