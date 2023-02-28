@@ -76,4 +76,4 @@ COPY --from=launcher-builder /usr/local/cargo/bin/text-generation-launcher /usr/
 COPY entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "entrypoint.sh"]
