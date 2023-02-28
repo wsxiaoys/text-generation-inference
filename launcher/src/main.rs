@@ -21,11 +21,11 @@ use subprocess::{ExitStatus, Popen, PopenConfig, PopenError, Redirection};
 struct Args {
     #[clap(default_value = "bigscience/bloom-560m", long, env = "HF_MODEL_ID")]
     model_id: String,
-    #[clap(long, env)]
+    #[clap(long, env = "HF_MODEL_REVISION")]
     revision: Option<String>,
     #[clap(default_value = "1", long, env = "SM_NUM_GPUS")]
     num_shard: usize,
-    #[clap(long, env)]
+    #[clap(long, env, env = "HF_MODEL_QUANTIZE")]
     quantize: bool,
     #[clap(default_value = "128", long, env)]
     max_concurrent_requests: usize,
