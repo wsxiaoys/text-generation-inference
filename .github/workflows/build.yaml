@@ -43,6 +43,7 @@ jobs:
           flavor: |
             latest=auto
           images: |
+            ghcr.io/huggingface/text-generation-inference
             registry.internal.huggingface.tech/api-inference/community/text-generation-inference
           tags: |
             type=raw,value=sagemaker-sha-${{ env.GITHUB_SHA_SHORT }}
