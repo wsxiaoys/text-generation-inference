@@ -73,4 +73,7 @@ COPY --from=router-builder /usr/local/cargo/bin/text-generation-router /usr/loca
 # Install launcher
 COPY --from=launcher-builder /usr/local/cargo/bin/text-generation-launcher /usr/local/bin/text-generation-launcher
 
-ENTRYPOINT ["text-generation-launcher", "--json-output"]
+COPY entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
