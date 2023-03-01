@@ -32,7 +32,7 @@ FROM nvidia/cuda:11.8.0-devel-ubuntu22.04
 ENV LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
     DEBIAN_FRONTEND=noninteractive \
-    HUGGINGFACE_HUB_CACHE=/data \
+    HUGGINGFACE_HUB_CACHE=/tmp \
     HF_HUB_ENABLE_HF_TRANSFER=1 \
     MODEL_ID=bigscience/bloom-560m \
     QUANTIZE=false \
