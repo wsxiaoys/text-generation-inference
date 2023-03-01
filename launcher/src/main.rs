@@ -43,7 +43,7 @@ struct Args {
     master_addr: String,
     #[clap(default_value = "29500", long, env)]
     master_port: usize,
-    #[clap(long, env)]
+    #[clap(default_value = "/tmp", long, env)]
     huggingface_hub_cache: Option<String>,
     #[clap(long, env)]
     weights_cache_override: Option<String>,
